@@ -1,0 +1,108 @@
+---
+# tasks file for ec2-conf
+
+- name: install git & java
+  dnf:
+      name:
+        - git
+        - java-17-amazon-corretto-jmods-1:17.0.9+8-1.amzn2023.1.x86_64
+
+      state: present
+
+
+- name: install gradle
+  command: wget https://services.gradle.org/distributions/gradle-7.6.1-bin.zip
+
+    #- name: unzip gradle
+    #  command: "unzip gradle-7.6.1-bin.zip -d /opt/" 
+    #  become: yes
+
+    #- name: "put gradle in path & test it  "
+    #  shell: "ln -s /opt/gradle-7.6.1/bin/gradle /usr/bin/gradle && gradle -v"
+    #  register: test_gradle
+
+- name: unarchive gradle
+  unarchive:
+    src: /home/ec2-user/gradle-7.6.1-bin.zip
+    dest: /opt/
+    remote_src: yes
+
+- name: create softlink
+  file:
+    src: /opt/gradle-7.6.1/bin/gradle
+    dest: /usr/bin/gradle
+    state: link
+
+      #- name: Install dependencies
+      #  package:
+      #      name:
+      #        - curl
+      #        - yum-utils
+          #        - dnf-plugins-core
+          #      state: present
+
+- name: Add Docker repository
+  yum_repository:
+      name: docker-ce
+      description: Docker CE Repository
+      baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+      enabled: yes
+      gpgcheck: yes
+      gpgkey: https://download.docker.com/linux/centos/gpg
+
+
+
+
+- name: Clean DNF cache
+  command: dnf clean all
+
+- name: Update DNF cache
+  command: dnf makecache
+
+- name: Install Docker and dependencies
+  package:
+      name:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+      state: present
+
+- name: Start Docker service
+  service:
+      name: docker
+      state: started
+      enabled: yes
+
+- name: Add ec2-user to Docker group
+  user:
+      name: ec2-user
+      groups: docker
+      append: yes
+
+- name: get jenkins repo
+  command: "wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo"
+
+- name: jenkins gpg
+  command: "rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key"
+
+
+- name: Clean DNF cache
+  command: dnf clean all
+
+- name: Update DNF cache
+  command: dnf makecache
+
+
+- name: install jenkins
+  dnf:
+     name: 
+       - jenkins
+       
+     state: present
+
+- name: start jenkins
+  service:
+      name: jenkins
+      state: started
+      enabled: yes
+

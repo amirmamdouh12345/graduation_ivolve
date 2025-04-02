@@ -1,0 +1,7 @@
+---
+# vars file for ec2-conf
+
+packages:
+  - git
+  - openjdk-17-jdk
+
