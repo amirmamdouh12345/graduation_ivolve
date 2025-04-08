@@ -1,4 +1,4 @@
 [mysql]
-#mysql-1 ansible_host=13.217.227.190 ansible_user=ec2-user
-mysql-2 ansible_host=3.85.123.182 ansible_user=ec2-user
+jenkins-slave ansible_host=3.93.174.63 ansible_user=ec2-user
+jenkins-master ansible_host=3.85.123.182 ansible_user=ec2-user
 

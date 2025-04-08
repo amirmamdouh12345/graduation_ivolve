@@ -1,0 +1,78 @@
+---
+
+- name: Slave dependencies
+  hosts: jenkins-slave 
+  become: yes
+  tasks:
+    - name: install gradle
+      command: wget https://services.gradle.org/distributions/gradle-7.6.1-bin.zip
+
+    #- name: unzip gradle
+    #  command: "unzip gradle-7.6.1-bin.zip -d /opt/" 
+    #  become: yes
+
+    #- name: "put gradle in path & test it  "
+    #  shell: "ln -s /opt/gradle-7.6.1/bin/gradle /usr/bin/gradle && gradle -v"
+    #  register: test_gradle
+
+    - name: unarchive gradle
+      unarchive:
+        src: /home/ec2-user/gradle-7.6.1-bin.zip
+        dest: /opt/
+        remote_src: yes
+
+    - name: create softlink
+      file:
+        src: /opt/gradle-7.6.1/bin/gradle
+        dest: /usr/bin/gradle
+        state: link
+
+
+
+
+    - name: install java & git 
+      package:
+        name: 
+         - java-17-amazon-corretto-jmods-1:17.0.8+8-1.amzn2023.1.x86_64
+         - git 
+        state: present
+         
+    - name: Add Docker repository
+      yum_repository:
+        name: docker-ce
+        description: Docker CE Repository
+        baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+        enabled: yes
+        gpgcheck: yes
+        gpgkey: https://download.docker.com/linux/centos/gpg
+
+    - name: clean dnf
+      command: dnf clean all
+    
+    - name: update dnf cache
+      command: dnf makecache
+              
+    - name: Install Docker and dependencies
+      package:
+        name:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        state: present
+
+
+    - name: k
+      service:
+        name: docker 
+        state: started
+        enabled: yes
+
+    - name: create jenkins user
+      user:
+         name: jenkins
+         groups: jenkins,docker 
+         state: present  
+         create_home: true
+         home: /home/jenkins
+         shell: /bin/bash
+             
